@@ -1,17 +1,19 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
 
-const sequelize = new Sequelize("AccountingBuddy", "postgres", "bcsf13m015", {
-  host: "localhost",
-  dialect: "postgres",
-});
-
-class User extends Model {
-  // This is used to update db schema if there is any new changes
-  static updateSchema() {
-    User.sync({ force: true });
-    console.log("The table for the User model was just (re)created!");
+const dbConfig = require("../../config/database");
+const sequelize = new Sequelize(
+  dbConfig.Name,
+  dbConfig.Username,
+  dbConfig.Password,
+  {
+    host: dbConfig.host,
+    dialect: dbConfig.dialect,
   }
-}
+);
+
+const dbWrapper = require("../DbWrapper");
+
+class User extends Model {}
 
 User.init(
   {
