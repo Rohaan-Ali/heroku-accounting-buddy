@@ -33,6 +33,9 @@ Garage.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    Workers: {
+      type: DataTypes.JSON,
+    },
     IsActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
