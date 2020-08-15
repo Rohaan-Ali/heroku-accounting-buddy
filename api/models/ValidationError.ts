@@ -1,4 +1,4 @@
-module.exports = class ValidationError {
-  public FieldName: string | undefined;
-  public ErrorName: string | undefined;
-};
+export class ValidationError {
+  public FieldName!: string | number | "";
+  public Message!: string | "";
+}

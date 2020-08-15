@@ -3,11 +3,11 @@ import Joi from "joi";
 
 const router = express.Router();
 import { AuthService } from "../services/AuthService";
-const ValidationError = require("../models/ValidationError");
+import { ValidationError } from "../models/ValidationError";
 const StatusCodes = require("../config/StatusCodes");
 
 router.post("/signup", async (req, res) => {
-  let signupErrors = [];
+  let signupErrors = new Array<ValidationError>();
 
   const validationResult = await validateUser(req.body);
   if (validationResult.error) {
@@ -25,16 +25,16 @@ router.post("/signup", async (req, res) => {
     return;
   } else {
     const authService = new AuthService();
-    const status = authService.RegisterUser(req);
+    const status = await authService.RegisterUser(req);
 
     console.log("Status : ", status);
-    if (status === StatusCodes.SignupCodes.Success) {
+    if (status == StatusCodes.SignupCodes.Success) {
       res.status(200).json({
         success: true,
         user: req.body,
         errors: null,
       });
-    } else if (status === StatusCodes.SignupCodes.EmailAlreadyRegistered) {
+    } else if (status == StatusCodes.SignupCodes.EmailAlreadyRegistered) {
       let validationError = new ValidationError();
       validationError.FieldName = "Email";
       validationError.Message = "Email already registered!";
@@ -45,7 +45,7 @@ router.post("/signup", async (req, res) => {
         user: req.body,
         errors: signupErrors,
       });
-    } else if (status === StatusCodes.SignupCodes.InternalServerError) {
+    } else if (status == StatusCodes.SignupCodes.InternalServerError) {
       let validationError = new ValidationError();
       validationError.FieldName = "General";
       validationError.Message =
