@@ -1,10 +1,10 @@
 import { Request } from "express";
+import { Worker } from "../models/Worker";
 
 const Garage = require("../db/models/Garage");
 const User = require("../db/models/User");
 const StatusCodes = require("../config/StatusCodes");
 const RoleCD = require("../config/RoleCD");
-import { Worker } from "../models/Worker";
 
 export class GarageService {
   RegisterGarage() {
@@ -39,7 +39,6 @@ export class GarageService {
 
     return garageId;
   }
-
   async AddWorker(addWorkerRequest: Request): Promise<Number> {
     const { GarageId, Email } = addWorkerRequest.body;
     let status = 0;

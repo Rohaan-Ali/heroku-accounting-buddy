@@ -10,4 +10,10 @@ module.exports = {
     WorkerAlreadyExists: 1012,
     Failure: 1013,
   },
+  SigninCodes: {
+    Success: 1020,
+    InvalidEmail: 1021,
+    IncorrectPassword: 1022,
+    Failure: 1023,
+  },
 };

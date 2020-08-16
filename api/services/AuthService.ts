@@ -1,12 +1,13 @@
 import { Request } from "express";
-
 import { GarageService } from "../services/GarageService";
+
 const bcrypt = require("bcrypt");
 const User = require("../db/models/User");
 const StatusCodes = require("../config/StatusCodes");
 const RoleCD = require("../config/RoleCD");
 
 export class AuthService {
+  // New user validation and registration
   async RegisterUser(signupRequest: Request): Promise<Number> {
     const { Name, Email, Password } = signupRequest.body;
     const user = await User.findOne({ where: { Email: Email } });
@@ -42,6 +43,34 @@ export class AuthService {
             });
         });
     }
+    return status;
+  }
+
+  // Validate user for signin and return authorized token
+  async ValidateUser(signinRequest: Request): Promise<Number> {
+    let status = 0;
+
+    const { Email, Password } = signinRequest.body;
+    const user = await User.findOne({ where: { Email: Email } });
+
+    if (!user) {
+      status = StatusCodes.SigninCodes.InvalidEmail;
+    } else {
+      await bcrypt
+        .compare(Password, user.Password)
+        .then((isMatched: any) => {
+          if (isMatched) {
+            status = StatusCodes.SigninCodes.Success;
+          } else {
+            status = StatusCodes.SigninCodes.IncorrectPassword;
+          }
+        })
+        .catch((err: any) => {
+          console.log(err);
+          status = StatusCodes.SigninCodes.Failure;
+        });
+    }
+
     return status;
   }
 }
