@@ -107,6 +107,58 @@ export class GarageService {
         status = StatusCodes.AddWorkerCodes.WorkerAlreadyExists;
       }
     }
+
+    return status;
+  }
+  async OnboardGarage(onboardingRequest: Request): Promise<Number> {
+    const {
+      AdminUserId,
+      Name,
+      Address,
+      BusinessNumber,
+    } = onboardingRequest.body;
+    let status = 0;
+
+    const garage = await Garage.findOne({
+      where: { Name: Name, BusinessNumber: BusinessNumber },
+    });
+
+    if (garage === null) {
+      const newGarage = Garage.build({
+        Name: Name,
+        Address: Address,
+        BusinessNumber: BusinessNumber,
+      });
+
+      await newGarage
+        .save()
+        .then(async () => {
+          const user = await User.findOne({ where: { UserId: AdminUserId } });
+          if (user) {
+            await User.update(
+              { RoleCD: RoleCD.Roles.GarageAdmin, GarageId: newGarage.Id },
+              {
+                where: {
+                  UserId: AdminUserId,
+                },
+              }
+            );
+          }
+          status = StatusCodes.OnboardingGarageCodes.Success;
+        })
+        .catch(async (err: any) => {
+          console.log(err);
+          status = StatusCodes.OnboardingGarageCodes.Failure;
+        });
+    } else {
+      status = StatusCodes.OnboardingGarageCodes.GarageAlreadyRegistered;
+    }
+
+    /*Steps*/
+    // 1. Check whether a garage exists with same name and business number as in request
+    // 2. If no, register new garage
+    // 3. update status of user to admin user
+
     return status;
   }
 }

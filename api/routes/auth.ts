@@ -87,13 +87,13 @@ router.post("/signin", async (req, res) => {
 
     console.log("Status : ", status);
     if (status == StatusCodes.SigninCodes.Success) {
+      const user = await authService.GetUserByEmail(req.body.Email);
       // Issue Token
-      const issuesToken = issueJWT(req.body.Email);
+      const issuesToken = issueJWT(user.Email, user.UserId);
       res.status(200).json({
         success: true,
         token: issuesToken.token,
         expiresIn: issuesToken.expires,
-        issuedAt: issuesToken.IssuedAt,
         errors: null,
       });
     } else if (status == StatusCodes.SigninCodes.InvalidEmail) {
@@ -159,20 +159,17 @@ async function validateSigninUser(user: any) {
 
   return schema.validate(user, { abortEarly: false });
 }
-function issueJWT(Email: any) {
+function issueJWT(Email: any, UserId: any) {
   const payload = {
     Email: Email,
-    iat: Date.now(),
+    UserId: UserId,
   };
-
-  console.log(payload.iat);
   const signedToken = jwt.sign(payload, Keys.PassportSecretKey, {
-    expiresIn: "300s",
+    expiresIn: Keys.JwtExpiresIn,
   });
   return {
     token: signedToken,
     expires: Keys.JwtExpiresIn,
-    IssuedAt: payload.iat,
   };
 }
 module.exports = router;

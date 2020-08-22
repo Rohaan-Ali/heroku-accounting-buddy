@@ -16,4 +16,9 @@ module.exports = {
     IncorrectPassword: 1022,
     Failure: 1023,
   },
+  OnboardingGarageCodes: {
+    Success: 1040,
+    GarageAlreadyRegistered: 1041,
+    Failure: 1043,
+  },
 };

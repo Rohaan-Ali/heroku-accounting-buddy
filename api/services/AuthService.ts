@@ -51,7 +51,9 @@ export class AuthService {
     let status = 0;
 
     const { Email, Password } = signinRequest.body;
-    const user = await User.findOne({ where: { Email: Email } });
+    const user = await User.findOne({
+      where: { Email: Email, IsActive: true, IsDeleted: false },
+    });
 
     if (!user) {
       status = StatusCodes.SigninCodes.InvalidEmail;
@@ -72,5 +74,22 @@ export class AuthService {
     }
 
     return status;
+  }
+
+  // Used to get user by email
+  async GetUserByEmail(Email: String): Promise<any> {
+    const user = await User.findOne({ where: { Email: Email } });
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+  // Used to get user by user id
+  async GetUserByUserId(UserId: String): Promise<any> {
+    const user = await User.findOne({ where: { UserId: UserId } });
+    if (user) {
+      return user;
+    }
+    return null;
   }
 }

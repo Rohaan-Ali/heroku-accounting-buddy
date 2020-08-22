@@ -1,4 +1,4 @@
 module.exports = {
   PassportSecretKey: "AccountingBuddy",
-  JwtExpiresIn: "300s",
+  JwtExpiresIn: "3600s",
 };
