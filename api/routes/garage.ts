@@ -137,7 +137,7 @@ router.post(
       const user = await authService.GetUserByUserId(req.body.AdminUserId);
 
       if (user != null) {
-        if (user.RoleCD === RoleCD.Roles.GarageWorker) {
+        if (user.RoleCD !== RoleCD.Roles.Unassigned) {
           isPermitted = false;
         }
       } else {

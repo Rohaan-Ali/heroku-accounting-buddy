@@ -62,6 +62,12 @@ Garage.init(
     modelName: "Garage",
     tableName: "Garages",
     timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["Name", "Address", "BusinessNumber"],
+      },
+    ],
   }
 );
 

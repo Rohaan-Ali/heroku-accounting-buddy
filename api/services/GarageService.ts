@@ -120,7 +120,7 @@ export class GarageService {
     let status = 0;
 
     const garage = await Garage.findOne({
-      where: { Name: Name, BusinessNumber: BusinessNumber },
+      where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
     });
 
     if (garage === null) {

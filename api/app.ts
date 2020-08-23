@@ -5,6 +5,7 @@ const passport = require("passport");
 
 const dbWrapper = require("./db/DbWrapper");
 dbWrapper.connect();
+//dbWrapper.updateSchemas("Garage");
 
 const app = express();
 
