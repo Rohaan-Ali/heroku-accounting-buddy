@@ -4,6 +4,7 @@ import { AuthService } from "../services/AuthService";
 import { ValidationError } from "../models/ValidationError";
 
 const router = express.Router();
+const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const StatusCodes = require("../config/StatusCodes");
 const Keys = require("../config/keys");
@@ -134,6 +135,39 @@ router.post("/signin", async (req, res) => {
     return;
   }
 });
+
+router.get(
+  "/getsigninuser/:emailid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const emailId = req.params.emailid;
+    let getUserErrors = new Array<ValidationError>();
+
+    if (emailId != null && emailId.length > 0) {
+      const authService = new AuthService();
+      const signinUser = await authService.GetSigninUser(emailId);
+
+      if (signinUser !== null) {
+        res.status(200).json({
+          success: true,
+          errors: null,
+          signinUser: signinUser,
+        });
+      } else {
+        let validationError = new ValidationError();
+        validationError.FieldName = "EmailId";
+        validationError.Message = "User Not Found!";
+
+        res.status(200).json({
+          success: false,
+          errors: validationError,
+          signinUser: null,
+        });
+      }
+    }
+    return;
+  }
+);
 
 async function validateUser(user: any) {
   const schema = Joi.object({

@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { GarageService } from "../services/GarageService";
+import { SigninUser } from "../models/response/SigninUser";
 
 const bcrypt = require("bcrypt");
 const User = require("../db/models/User");
@@ -76,6 +77,25 @@ export class AuthService {
     return status;
   }
 
+  // Get signedin user details
+  async GetSigninUser(emailId: string): Promise<any> {
+    let signinUser = new SigninUser();
+
+    const user = await this.GetUserByEmail(emailId);
+    if (user !== null) {
+      signinUser.Email = user.Email;
+      signinUser.UserId = user.UserId;
+      signinUser.Name = user.Name;
+      signinUser.RoleCD = user.RoleCD;
+      signinUser.GarageId = user.GarageId;
+      signinUser.IsActive = user.IsActive;
+      signinUser.IsDeleted = user.IsDeleted;
+      return signinUser;
+    }
+
+    return null;
+  }
+
   // Used to get user by email
   async GetUserByEmail(Email: String): Promise<any> {
     const user = await User.findOne({ where: { Email: Email } });
@@ -84,6 +104,7 @@ export class AuthService {
     }
     return null;
   }
+
   // Used to get user by user id
   async GetUserByUserId(UserId: String): Promise<any> {
     const user = await User.findOne({ where: { UserId: UserId } });
