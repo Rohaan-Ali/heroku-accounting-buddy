@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import { AuthService } from "../services/AuthService";
 import { ValidationError } from "../models/ValidationError";
+import { DecodeJwtToken } from "../helper/Authorization";
 
 const router = express.Router();
 const passport = require("passport");
@@ -140,30 +141,54 @@ router.get(
   "/getsigninuser/:emailid",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
+    const decodedToken = DecodeJwtToken(req);
+
     const emailId = req.params.emailid;
-    let getUserErrors = new Array<ValidationError>();
 
     if (emailId != null && emailId.length > 0) {
-      const authService = new AuthService();
-      const signinUser = await authService.GetSigninUser(emailId);
-
-      if (signinUser !== null) {
-        res.status(200).json({
-          success: true,
-          errors: null,
-          signinUser: signinUser,
-        });
-      } else {
+      // User validation using token
+      if (emailId !== decodedToken.payload.Email) {
         let validationError = new ValidationError();
         validationError.FieldName = "EmailId";
-        validationError.Message = "User Not Found!";
+        validationError.Message = "You are not permitted to perform this task!";
 
         res.status(200).json({
           success: false,
           errors: validationError,
           signinUser: null,
         });
+      } else {
+        const authService = new AuthService();
+        const signinUser = await authService.GetSigninUser(emailId);
+
+        if (signinUser !== null) {
+          res.status(200).json({
+            success: true,
+            errors: null,
+            signinUser: signinUser,
+          });
+        } else {
+          let validationError = new ValidationError();
+          validationError.FieldName = "EmailId";
+          validationError.Message = "User Not Found!";
+
+          res.status(200).json({
+            success: false,
+            errors: validationError,
+            signinUser: null,
+          });
+        }
       }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "EmailId";
+      validationError.Message = "Invalid EmailId";
+
+      res.status(200).json({
+        success: false,
+        errors: validationError,
+        signinUser: null,
+      });
     }
     return;
   }

@@ -3,6 +3,7 @@ import Joi from "joi";
 import { GarageService } from "../services/GarageService";
 import { AuthService } from "../services/AuthService";
 import { ValidationError } from "../models/ValidationError";
+import { DecodeJwtToken } from "../helper/Authorization";
 
 const router = express.Router();
 const passport = require("passport");
@@ -13,8 +14,22 @@ router.post(
   "/addworker",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    let addWorkerErrors = new Array<ValidationError>();
+    // User validation using token
+    const decodedToken = DecodeJwtToken(req);
+    if (decodedToken.payload.UserId !== req.body.UserId) {
+      let validationError = new ValidationError();
+      validationError.FieldName = "UserId";
+      validationError.Message = "You are not permitted to perform this task!";
 
+      res.status(200).json({
+        success: false,
+        errors: validationError,
+        signinUser: null,
+      });
+      return;
+    }
+
+    let addWorkerErrors = new Array<ValidationError>();
     const validationResult = await validateWorker(req.body);
     if (validationResult.error) {
       for (const index in validationResult.error.details) {
@@ -114,8 +129,22 @@ router.post(
   "/garageonboarding",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    let onboardGarageErrors = new Array<ValidationError>();
+    // User validation using token
+    const decodedToken = DecodeJwtToken(req);
+    if (decodedToken.payload.UserId !== req.body.AdminUserId) {
+      let validationError = new ValidationError();
+      validationError.FieldName = "UserId";
+      validationError.Message = "You are not permitted to perform this task!";
 
+      res.status(200).json({
+        success: false,
+        errors: validationError,
+        signinUser: null,
+      });
+      return;
+    }
+
+    let onboardGarageErrors = new Array<ValidationError>();
     const validationResult = await validateGarage(req.body);
     if (validationResult.error) {
       for (const index in validationResult.error.details) {
