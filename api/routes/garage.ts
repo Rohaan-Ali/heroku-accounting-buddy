@@ -232,6 +232,91 @@ router.post(
   }
 );
 
+router.post(
+  "/updategarage/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = req.params.garageid;
+    // User validation using token
+    const decodedToken = DecodeJwtToken(req);
+    if (decodedToken.payload.UserId !== req.body.AdminUserId) {
+      let validationError = new ValidationError();
+      validationError.FieldName = "UserId";
+      validationError.Message = "You are not permitted to perform this task!";
+
+      res.status(200).json({
+        success: false,
+        errors: validationError,
+        signinUser: null,
+      });
+      return;
+    }
+
+    let updateGarageErrors = new Array<ValidationError>();
+    const validationResult = await validateGarage(req.body);
+    if (validationResult.error) {
+      for (const index in validationResult.error.details) {
+        let validationError = new ValidationError();
+        validationError.FieldName =
+          validationResult.error.details[index].path[0];
+        validationError.Message = validationResult.error.details[index].message;
+        updateGarageErrors.push(validationError);
+      }
+      res.status(400).json({
+        success: false,
+        request: req.body,
+        errors: updateGarageErrors,
+      });
+      return;
+    } else {
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(req.body.AdminUserId);
+
+      if (user != null) {
+        if (
+          user.RoleCD !== RoleCD.Roles.GarageAdmin &&
+          user.GarageId !== GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
+
+        return;
+      }
+
+      const garageService = new GarageService();
+      const status = await garageService.UpdateGarageDetails(req, GarageId);
+      console.log(status);
+
+      if (status == StatusCodes.UpdateGarageCodes.Success) {
+        res.status(200).json({
+          success: true,
+          request: req.body,
+          errors: null,
+        });
+      } else if (status == StatusCodes.UpdateGarageCodes.GarageNotFound) {
+      } else if (status == StatusCodes.UpdateGarageCodes.Failure) {
+      }
+    }
+  }
+);
+
 async function validateWorker(worker: any) {
   const schema = Joi.object({
     UserId: Joi.string().uuid().required(),
