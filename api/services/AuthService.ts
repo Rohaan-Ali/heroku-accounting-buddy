@@ -96,59 +96,6 @@ export class AuthService {
     return null;
   }
 
-  // Change password for signin user
-  async ChangePassword(
-    changePassword: Request,
-    UserId: String
-  ): Promise<Number> {
-    let status = 0;
-    const { OldPassword, NewPassword, ConfirmPassword } = changePassword.body;
-
-    if (NewPassword !== ConfirmPassword) {
-      status = StatusCodes.ChangePasswordCodes.PasswordNotConfirmed;
-    } else {
-      const user = await this.GetUserByUserId(UserId);
-      if (user == null) {
-        status = StatusCodes.ChangePasswordCodes.UserNotFound;
-      } else {
-        await bcrypt
-          .compare(OldPassword, user.Password)
-          .then(async (isMatched: any) => {
-            if (isMatched) {
-              await bcrypt
-                .hash(NewPassword, 10)
-                .then(async function (hash: any, err: any) {
-                  if (err) throw err;
-                  await User.update(
-                    { Password: hash },
-                    {
-                      where: {
-                        UserId: UserId,
-                      },
-                    }
-                  )
-                    .then(async () => {
-                      status = StatusCodes.ChangePasswordCodes.Success;
-                    })
-                    .catch(async (err: any) => {
-                      console.log(err);
-                      status = StatusCodes.ChangePasswordCodes.Failure;
-                    });
-                });
-            } else {
-              status = StatusCodes.ChangePasswordCodes.InvalidOldPassword;
-            }
-          })
-          .catch((err: any) => {
-            console.log(err);
-            status = StatusCodes.ChangePasswordCodes.Failure;
-          });
-      }
-    }
-
-    return status;
-  }
-
   // Used to get user by email
   async GetUserByEmail(Email: String): Promise<any> {
     const user = await User.findOne({ where: { Email: Email } });
@@ -160,9 +107,7 @@ export class AuthService {
 
   // Used to get user by user id
   async GetUserByUserId(UserId: String): Promise<any> {
-    const user = await User.findOne({
-      where: { UserId: UserId, IsActive: true, IsDeleted: false },
-    });
+	const user = await User.findOne({ where: { UserId: UserId } });
     if (user) {
       return user;
     }
