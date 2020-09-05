@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { Worker } from "../models/Worker";
+import { GarageDetail } from "../models/response/GarageDetail";
 
 const Garage = require("../db/models/Garage");
 const User = require("../db/models/User");
@@ -179,5 +180,22 @@ export class GarageService {
     });
 
     return status;
+  }
+  // Get garage details
+  async GetGarageDetails(GarageId: number): Promise<any> {
+    let garageDetail = new GarageDetail();
+
+    const garage = await await Garage.findByPk(GarageId);
+    if (garage !== null) {
+      garageDetail.Address = garage.Address;
+      garageDetail.BusinessNumber = garage.BusinessNumber;
+      garageDetail.Name = garage.Name;
+      garageDetail.GarageId = garage.GarageId;
+      garageDetail.IsActive = garage.IsActive;
+      garageDetail.IsDeleted = garage.IsDeleted;
+      return garageDetail;
+    }
+
+    return null;
   }
 }
