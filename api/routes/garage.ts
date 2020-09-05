@@ -275,8 +275,8 @@ router.post(
 
       if (user != null) {
         if (
-          user.RoleCD !== RoleCD.Roles.GarageAdmin &&
-          user.GarageId !== GarageId
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
         ) {
           isPermitted = false;
         }
@@ -311,7 +311,42 @@ router.post(
           errors: null,
         });
       } else if (status == StatusCodes.UpdateGarageCodes.GarageNotFound) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "GarageId";
+        validationError.Message = "Invalid Garage Id!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
+      } else if (
+        status == StatusCodes.UpdateGarageCodes.GarageAlreadyRegistered
+      ) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "All";
+        validationError.Message =
+          "Garage already registered against these details!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
       } else if (status == StatusCodes.UpdateGarageCodes.Failure) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "General";
+        validationError.Message =
+          "Error while updating data. Please try again after sometime!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
       }
     }
   }

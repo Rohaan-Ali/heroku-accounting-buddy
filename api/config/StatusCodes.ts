@@ -24,6 +24,7 @@ module.exports = {
   UpdateGarageCodes: {
     Success: 1060,
     GarageNotFound: 1061,
-    Failure: 1062,
+    GarageAlreadyRegistered: 1062,
+    Failure: 1063,
   },
 };
