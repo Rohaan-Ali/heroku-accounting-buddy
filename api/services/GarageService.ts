@@ -161,23 +161,4 @@ export class GarageService {
 
     return status;
   }
-  async UpdateGarageDetails(
-    onboardingRequest: Request,
-    garageId: string
-  ): Promise<Number> {
-    const {
-      AdminUserId,
-      Name,
-      Address,
-      BusinessNumber,
-    } = onboardingRequest.body;
-    let status = 0;
-    const GarageId = parseInt(garageId);
-
-    const garage = await Garage.findOne({
-      where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
-    });
-
-    return status;
-  }
 }
