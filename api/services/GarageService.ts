@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { Worker } from "../models/Worker";
+const sequelize = require("../db/sequelize");
 
 const Garage = require("../db/models/Garage");
 const User = require("../db/models/User");
@@ -177,6 +178,24 @@ export class GarageService {
     const garage = await Garage.findOne({
       where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
     });
+  // Get garage details
+  async OffboardGarage(GarageId: number): Promise<Number> {
+    let status = 0;
+
+    const garage = await await Garage.findByPk(GarageId);
+    if (garage === null) {
+      status = StatusCodes.OffboardGarage.GarageNotFound;
+    } else {
+      try {
+        await sequelize.transaction((transaction: any) => {
+          //console.log("Transaction : ", transaction);
+        });
+        status = StatusCodes.OffboardGarage.Success;
+      } catch (error) {
+        console.log("Error: ", error);
+        status = StatusCodes.OffboardGarage.Failure;
+      }
+    }
 
     return status;
   }
