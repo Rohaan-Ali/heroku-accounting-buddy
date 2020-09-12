@@ -51,7 +51,10 @@ router.post(
       const user = await authService.GetUserByUserId(req.body.UserId);
 
       if (user != null) {
-        if (user.RoleCD !== RoleCD.Roles.GarageAdmin) {
+        if (
+          user.RoleCD !== RoleCD.Roles.GarageAdmin ||
+          user.GarageId != req.body.GarageId
+        ) {
           isPermitted = false;
         }
       } else {
@@ -275,8 +278,8 @@ router.post(
 
       if (user != null) {
         if (
-          user.RoleCD !== RoleCD.Roles.GarageAdmin &&
-          user.GarageId !== GarageId
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
         ) {
           isPermitted = false;
         }
