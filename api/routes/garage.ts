@@ -317,6 +317,85 @@ router.post(
   }
 );
 
+router.get(
+  "/getworkers/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = parseInt(req.params.garageid);
+
+    if (GarageId != null && GarageId > 0) {
+      // User validation using token
+      const decodedToken = DecodeJwtToken(req);
+
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(
+        decodedToken.payload.UserId
+      );
+
+      if (user != null) {
+        if (
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: validationError,
+        });
+
+        return;
+      } else {
+        const garageService = new GarageService();
+        const garageWorkers = await garageService.GetGarageWorkers(GarageId);
+
+        if (garageWorkers.length > 0) {
+          res.status(200).json({
+            success: true,
+            errors: null,
+            workers: garageWorkers,
+          });
+          return;
+        } else {
+          let validationError = new ValidationError();
+          validationError.FieldName = "GarageId";
+          validationError.Message = "No worker found!";
+
+          res.status(200).json({
+            success: false,
+            errors: validationError,
+            workers: null,
+          });
+          return;
+        }
+      }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "GarageId";
+      validationError.Message = "Invalid Garage Id!";
+
+      res.status(200).json({
+        success: false,
+        request: req.body,
+        errors: validationError,
+      });
+
+      return;
+    }
+  }
+);
 async function validateWorker(worker: any) {
   const schema = Joi.object({
     UserId: Joi.string().uuid().required(),
