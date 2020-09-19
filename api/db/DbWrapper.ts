@@ -1,18 +1,18 @@
 import { Sequelize } from "sequelize";
 
-const dbConfig = require("../config/database");
+const Configuration = require("config");
 const Garage = require("./models/Garage");
 const User = require("./models/User");
 const Car = require("./models/Car");
 const Transaction = require("./models/Transaction");
 
 const sequelize = new Sequelize(
-  dbConfig.Name,
-  dbConfig.Username,
-  dbConfig.Password,
+  Configuration.get("database.Name"),
+  Configuration.get("database.Username"),
+  Configuration.get("database.Password"),
   {
-    host: dbConfig.host,
-    dialect: dbConfig.dialect,
+    host: Configuration.get("database.Host"),
+    dialect: Configuration.get("database.dialect"),
   }
 );
 

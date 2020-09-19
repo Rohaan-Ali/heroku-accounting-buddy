@@ -8,7 +8,7 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const StatusCodes = require("../config/StatusCodes");
-const Keys = require("../config/keys");
+const Configuration = require("config");
 
 router.post("/signup", async (req, res) => {
   let signupErrors = new Array<ValidationError>();
@@ -223,12 +223,16 @@ function issueJWT(Email: any, UserId: any) {
     Email: Email,
     UserId: UserId,
   };
-  const signedToken = jwt.sign(payload, Keys.PassportSecretKey, {
-    expiresIn: Keys.JwtExpiresIn,
-  });
+  const signedToken = jwt.sign(
+    payload,
+    Configuration.get("jwt.PassportSecretKey"),
+    {
+      expiresIn: Configuration.get("jwt.JwtExpiresIn"),
+    }
+  );
   return {
     token: signedToken,
-    expires: Keys.JwtExpiresIn,
+    expires: Configuration.get("jwt.JwtExpiresIn"),
   };
 }
 module.exports = router;
