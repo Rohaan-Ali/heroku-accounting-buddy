@@ -8,15 +8,6 @@ const StatusCodes = require("../config/StatusCodes");
 const RoleCD = require("../config/RoleCD");
 
 export class GarageService {
-  RegisterGarage() {
-    const newGarage = Garage.build({
-      Name: "Garage1",
-      Address: "Address1",
-      BusinessNumber: "15648631",
-    });
-
-    newGarage.save();
-  }
   async FindWorker(email: string): Promise<Number> {
     let garageId = 0;
 
@@ -66,7 +57,18 @@ export class GarageService {
               },
             }
           )
-            .then(() => {
+            .then(async () => {
+              const user = await User.findOne({ where: { Email: Email } });
+              if (user) {
+                await User.update(
+                  { RoleCD: RoleCD.Roles.GarageWorker, GarageId: GarageId },
+                  {
+                    where: {
+                      Email: Email,
+                    },
+                  }
+                );
+              }
               status = StatusCodes.AddWorkerCodes.Success;
             })
             .catch((err: any) => {
@@ -218,5 +220,60 @@ export class GarageService {
     }
 
     return null;
+  }
+  async OffboardGarage(GarageId: number): Promise<Number> {
+    let status = 0;
+
+    const garage = await Garage.findOne({
+      where: { Id: GarageId, IsDeleted: false, IsActive: true },
+    });
+    if (garage === null) {
+      status = StatusCodes.OffboardGarage.GarageNotFound;
+    } else {
+      try {
+        await sequelize.transaction(async (transaction: any) => {
+          // Step 1: Find users where garage id = GarageId
+          // Step 2: Update all these users GarageId to null and role to unassigned
+          // Step 3: Soft delete Garage from DB
+          // Todo: Need to confirm with Muhammad Qureshi that should we disable user accounts or not
+
+          const garageUsers = await User.findAll({
+            where: { GarageId: GarageId },
+          });
+
+          garageUsers.forEach(async (user: any) => {
+            const dbUser = user.get({ plain: true });
+            console.log("DbUser : ", dbUser);
+            if (dbUser) {
+              await User.update(
+                { RoleCD: RoleCD.Roles.Unassigned, GarageId: null },
+                {
+                  where: {
+                    Email: dbUser.Email,
+                  },
+                },
+                { transaction: transaction }
+              );
+            }
+          });
+
+          await Garage.update(
+            { IsActive: false, IsDeleted: true, Workers: null },
+            {
+              where: {
+                Id: GarageId,
+              },
+            },
+            { transaction: transaction }
+          );
+        });
+        status = StatusCodes.OffboardGarage.Success;
+      } catch (error) {
+        console.log("Error: ", error);
+        status = StatusCodes.OffboardGarage.Failure;
+      }
+    }
+
+    return status;
   }
 }
