@@ -31,7 +31,6 @@ router.post("/signup", async (req, res) => {
     const authService = new AuthService();
     const status = await authService.RegisterUser(req);
 
-    console.log("Status : ", status);
     if (status == StatusCodes.SignupCodes.Success) {
       res.status(200).json({
         success: true,
@@ -194,6 +193,93 @@ router.get(
   }
 );
 
+router.post(
+  "/changepassword",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const decodedToken = DecodeJwtToken(req);
+    const UserId = decodedToken.payload.UserId;
+
+    let changePasswordErrors = new Array<ValidationError>();
+    const validationResult = await validateChangePassword(req.body);
+    if (validationResult.error) {
+      for (const index in validationResult.error.details) {
+        let validationError = new ValidationError();
+        validationError.FieldName =
+          validationResult.error.details[index].path[0];
+        validationError.Message = validationResult.error.details[index].message;
+        changePasswordErrors.push(validationError);
+      }
+      res.status(400).json({
+        success: false,
+        user: req.body,
+        errors: changePasswordErrors,
+      });
+      return;
+    } else {
+      const authService = new AuthService();
+      const status = await authService.ChangePassword(req, UserId);
+
+      if (status == StatusCodes.ChangePasswordCodes.Success) {
+        res.status(200).json({
+          success: true,
+          user: req.body,
+          errors: null,
+        });
+      } else if (
+        status == StatusCodes.ChangePasswordCodes.PasswordNotConfirmed
+      ) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "NewPassword";
+        validationError.Message = "Password Not Confirmed";
+        changePasswordErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          user: req.body,
+          errors: changePasswordErrors,
+        });
+      } else if (status == StatusCodes.ChangePasswordCodes.InvalidOldPassword) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "OldPassword";
+        validationError.Message = "Wrong Old Password";
+        changePasswordErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          user: req.body,
+          errors: changePasswordErrors,
+        });
+      } else if (status == StatusCodes.ChangePasswordCodes.UserNotFound) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "All";
+        validationError.Message = "User Not Found!";
+        changePasswordErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          user: req.body,
+          errors: changePasswordErrors,
+        });
+      } else if (status == StatusCodes.SignupCodes.InternalServerError) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "General";
+        validationError.Message =
+          "Error while saving data. Please try again after sometime!";
+        changePasswordErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          user: req.body,
+          errors: changePasswordErrors,
+        });
+      }
+
+      return;
+    }
+  }
+);
+
 async function validateUser(user: any) {
   const schema = Joi.object({
     Name: Joi.string()
@@ -214,6 +300,15 @@ async function validateSigninUser(user: any) {
   const schema = Joi.object({
     Email: Joi.string().email().required(),
     Password: Joi.string().required(),
+  });
+
+  return schema.validate(user, { abortEarly: false });
+}
+async function validateChangePassword(user: any) {
+  const schema = Joi.object({
+    OldPassword: Joi.string().required(),
+    NewPassword: Joi.string().min(8).max(50).required(),
+    ConfirmPassword: Joi.string().required(),
   });
 
   return schema.validate(user, { abortEarly: false });

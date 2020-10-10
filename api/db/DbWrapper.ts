@@ -1,20 +1,8 @@
-import { Sequelize } from "sequelize";
-
-const Configuration = require("config");
 const Garage = require("./models/Garage");
 const User = require("./models/User");
 const Car = require("./models/Car");
 const Transaction = require("./models/Transaction");
-
-const sequelize = new Sequelize(
-  Configuration.get("database.Name"),
-  Configuration.get("database.Username"),
-  Configuration.get("database.Password"),
-  {
-    host: Configuration.get("database.Host"),
-    dialect: Configuration.get("database.dialect"),
-  }
-);
+const sequelize = require("./sequelize");
 
 class DbWrapper {
   static async connect() {
