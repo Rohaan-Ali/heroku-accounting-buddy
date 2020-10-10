@@ -33,4 +33,9 @@ module.exports = {
     GarageNotFound: 1061,
     Failure: 1062,
   },
+  OffboardGarage: {
+    Success: 1070,
+    GarageNotFound: 1071,
+    Failure: 1072,
+  },
 };
