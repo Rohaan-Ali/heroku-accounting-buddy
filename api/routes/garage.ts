@@ -51,7 +51,10 @@ router.post(
       const user = await authService.GetUserByUserId(req.body.UserId);
 
       if (user != null) {
-        if (user.RoleCD !== RoleCD.Roles.GarageAdmin) {
+        if (
+          user.RoleCD !== RoleCD.Roles.GarageAdmin ||
+          user.GarageId != req.body.GarageId
+        ) {
           isPermitted = false;
         }
       } else {
@@ -352,6 +355,255 @@ router.post(
   }
 );
 
+router.get(
+  "/getgarage/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = parseInt(req.params.garageid);
+
+    if (GarageId != null && GarageId > 0) {
+      // User validation using token
+      const decodedToken = DecodeJwtToken(req);
+
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(
+        decodedToken.payload.UserId
+      );
+
+      if (user != null) {
+        if (
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: validationError,
+        });
+
+        return;
+      } else {
+        const garageService = new GarageService();
+        const garage = await garageService.GetGarageDetails(GarageId);
+
+        if (garage !== null) {
+          res.status(200).json({
+            success: true,
+            errors: null,
+            garageDetails: garage,
+          });
+          return;
+        } else {
+          let validationError = new ValidationError();
+          validationError.FieldName = "GarageId";
+          validationError.Message = "Garage Not Found!";
+
+          res.status(200).json({
+            success: false,
+            errors: validationError,
+            garageDetails: null,
+          });
+        }
+        return;
+      }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "GarageId";
+      validationError.Message = "Invalid Garage Id!";
+
+      res.status(200).json({
+        success: false,
+        request: req.body,
+        errors: validationError,
+      });
+
+      return;
+    }
+  }
+);
+
+router.post(
+  "/offboardgarage/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = parseInt(req.params.garageid);
+
+    if (GarageId != null && GarageId > 0) {
+      // User validation using token
+      const decodedToken = DecodeJwtToken(req);
+
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(
+        decodedToken.payload.UserId
+      );
+
+      if (user != null) {
+        if (
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: validationError,
+        });
+
+        return;
+      } else {
+        const garageService = new GarageService();
+        const status = await garageService.OffboardGarage(GarageId);
+
+        if (status == StatusCodes.OffboardGarage.Success) {
+          res.status(200).json({
+            success: true,
+            request: req.body,
+            errors: null,
+          });
+        } else if (status == StatusCodes.OffboardGarage.GarageNotFound) {
+          let validationError = new ValidationError();
+          validationError.FieldName = "GarageId";
+          validationError.Message = "Invalid Garage Id!";
+
+          res.status(200).json({
+            success: false,
+            request: req.body,
+            errors: validationError,
+          });
+        } else if (status == StatusCodes.OffboardGarage.Failure) {
+          let validationError = new ValidationError();
+          validationError.FieldName = "General";
+          validationError.Message =
+            "Error while updating data. Please try again after sometime!";
+
+          res.status(200).json({
+            success: false,
+            request: req.body,
+            errors: validationError,
+          });
+        }
+
+        return;
+      }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "GarageId";
+      validationError.Message = "Invalid Garage Id!";
+
+      res.status(200).json({
+        success: false,
+        errors: validationError,
+      });
+
+      return;
+    }
+  }
+);
+
+router.get(
+  "/getworkers/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = parseInt(req.params.garageid);
+
+    if (GarageId != null && GarageId > 0) {
+      // User validation using token
+      const decodedToken = DecodeJwtToken(req);
+
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(
+        decodedToken.payload.UserId
+      );
+
+      if (user != null) {
+        if (
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: validationError,
+        });
+
+        return;
+      } else {
+        const garageService = new GarageService();
+        const garageWorkers = await garageService.GetGarageWorkers(GarageId);
+
+        if (garageWorkers.length > 0) {
+          res.status(200).json({
+            success: true,
+            errors: null,
+            workers: garageWorkers,
+          });
+          return;
+        } else {
+          let validationError = new ValidationError();
+          validationError.FieldName = "GarageId";
+          validationError.Message = "No worker found!";
+
+          res.status(200).json({
+            success: false,
+            errors: validationError,
+            workers: null,
+          });
+          return;
+        }
+      }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "GarageId";
+      validationError.Message = "Invalid Garage Id!";
+
+      res.status(200).json({
+        success: false,
+        request: req.body,
+        errors: validationError,
+      });
+
+      return;
+    }
+  }
+);
 async function validateWorker(worker: any) {
   const schema = Joi.object({
     UserId: Joi.string().uuid().required(),
