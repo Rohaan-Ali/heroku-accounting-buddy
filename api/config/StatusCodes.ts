@@ -27,5 +27,10 @@ module.exports = {
     PasswordNotConfirmed: 1052,
     InvalidOldPassword: 1053,
     Failure: 1054,
-  }
+  },
+  UpdateGarageCodes: {
+    Success: 1060,
+    GarageNotFound: 1061,
+    Failure: 1062,
+  },
 };
