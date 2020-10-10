@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { Worker } from "../models/Worker";
+const sequelize = require("../db/sequelize");
 import { GarageDetail } from "../models/response/GarageDetail";
 
 const Garage = require("../db/models/Garage");
