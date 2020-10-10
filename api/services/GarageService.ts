@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { Worker } from "../models/Worker";
-const sequelize = require("../db/sequelize");
+import { GarageDetail } from "../models/response/GarageDetail";
 
 const Garage = require("../db/models/Garage");
 const User = require("../db/models/User");
@@ -168,19 +168,59 @@ export class GarageService {
     onboardingRequest: Request,
     garageId: string
   ): Promise<Number> {
-    const {
-      AdminUserId,
-      Name,
-      Address,
-      BusinessNumber,
-    } = onboardingRequest.body;
+    const { Name, Address, BusinessNumber } = onboardingRequest.body;
     let status = 0;
     const GarageId = parseInt(garageId);
 
-    const garage = await Garage.findOne({
-      where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
-    });
+    const garage = await Garage.findByPk(GarageId);
+    if (garage === null) {
+      status = StatusCodes.UpdateGarageCodes.GarageNotFound;
+    } else {
+      const newGarage = await Garage.findOne({
+        where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
+      });
+      if (newGarage === null) {
+        await Garage.update(
+          { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
+          {
+            where: {
+              Id: GarageId,
+            },
+          }
+        )
+          .then(() => {
+            status = StatusCodes.UpdateGarageCodes.Success;
+          })
+          .catch((err: any) => {
+            console.log(err);
+            status = StatusCodes.UpdateGarageCodes.Failure;
+          });
+      } else if (newGarage.Id != GarageId) {
+        status = StatusCodes.UpdateGarageCodes.GarageAlreadyRegistered;
+      } else {
+        status = StatusCodes.UpdateGarageCodes.Success;
+      }
+    }
+
+    return status;
+  }
   // Get garage details
+  async GetGarageDetails(GarageId: number): Promise<any> {
+    let garageDetail = new GarageDetail();
+
+    const garage = await await Garage.findByPk(GarageId);
+    if (garage !== null) {
+      garageDetail.Address = garage.Address;
+      garageDetail.BusinessNumber = garage.BusinessNumber;
+      garageDetail.Name = garage.Name;
+      garageDetail.GarageId = garage.GarageId;
+      garageDetail.IsActive = garage.IsActive;
+      garageDetail.IsDeleted = garage.IsDeleted;
+      return garageDetail;
+    }
+
+    return null;
+  }
   async OffboardGarage(GarageId: number): Promise<Number> {
     let status = 0;
 

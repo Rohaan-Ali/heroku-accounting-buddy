@@ -314,8 +314,123 @@ router.post(
           errors: null,
         });
       } else if (status == StatusCodes.UpdateGarageCodes.GarageNotFound) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "GarageId";
+        validationError.Message = "Invalid Garage Id!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
+      } else if (
+        status == StatusCodes.UpdateGarageCodes.GarageAlreadyRegistered
+      ) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "All";
+        validationError.Message =
+          "Garage already registered against these details!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
       } else if (status == StatusCodes.UpdateGarageCodes.Failure) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "General";
+        validationError.Message =
+          "Error while updating data. Please try again after sometime!";
+        updateGarageErrors.push(validationError);
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: updateGarageErrors,
+        });
       }
+    }
+  }
+);
+
+router.get(
+  "/getgarage/:garageid",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    const GarageId = parseInt(req.params.garageid);
+
+    if (GarageId != null && GarageId > 0) {
+      // User validation using token
+      const decodedToken = DecodeJwtToken(req);
+
+      let isPermitted = true;
+      const authService = new AuthService();
+      const user = await authService.GetUserByUserId(
+        decodedToken.payload.UserId
+      );
+
+      if (user != null) {
+        if (
+          user.RoleCD != RoleCD.Roles.GarageAdmin ||
+          user.GarageId != GarageId
+        ) {
+          isPermitted = false;
+        }
+      } else {
+        isPermitted = false;
+      }
+
+      if (!isPermitted) {
+        let validationError = new ValidationError();
+        validationError.FieldName = "UserId";
+        validationError.Message =
+          "You don't have persmission to complete this task!";
+
+        res.status(200).json({
+          success: false,
+          request: req.body,
+          errors: validationError,
+        });
+
+        return;
+      } else {
+        const garageService = new GarageService();
+        const garage = await garageService.GetGarageDetails(GarageId);
+
+        if (garage !== null) {
+          res.status(200).json({
+            success: true,
+            errors: null,
+            garageDetails: garage,
+          });
+          return;
+        } else {
+          let validationError = new ValidationError();
+          validationError.FieldName = "GarageId";
+          validationError.Message = "Garage Not Found!";
+
+          res.status(200).json({
+            success: false,
+            errors: validationError,
+            garageDetails: null,
+          });
+        }
+        return;
+      }
+    } else {
+      let validationError = new ValidationError();
+      validationError.FieldName = "GarageId";
+      validationError.Message = "Invalid Garage Id!";
+
+      res.status(200).json({
+        success: false,
+        request: req.body,
+        errors: validationError,
+      });
+
+      return;
     }
   }
 );
