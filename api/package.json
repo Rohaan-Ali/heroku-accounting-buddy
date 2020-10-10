@@ -6,13 +6,15 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "nodemon app.ts",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "setup": "node dist/setup.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
+    "config": "^3.3.1",
     "express": "^4.17.1",
     "joi": "^17.2.0",
     "jsonwebtoken": "^8.5.1",

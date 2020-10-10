@@ -1,17 +1,15 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
 
-const dbConfig = require("../../config/database");
+const Configuration = require("config");
 const sequelize = new Sequelize(
-  dbConfig.Name,
-  dbConfig.Username,
-  dbConfig.Password,
+  Configuration.get("database.Name"),
+  Configuration.get("database.Username"),
+  Configuration.get("database.Password"),
   {
-    host: dbConfig.host,
-    dialect: dbConfig.dialect,
+    host: Configuration.get("database.Host"),
+    dialect: Configuration.get("database.dialect"),
   }
 );
-
-const dbWrapper = require("../DbWrapper");
 
 class User extends Model {}
 
