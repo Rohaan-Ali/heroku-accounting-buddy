@@ -19,12 +19,13 @@ module.exports = {
   OnboardingGarageCodes: {
     Success: 1040,
     GarageAlreadyRegistered: 1041,
-    Failure: 1043,
+    Failure: 1042,
   },
-  UpdateGarageCodes: {
-    Success: 1060,
-    GarageNotFound: 1061,
-    GarageAlreadyRegistered: 1062,
-    Failure: 1063,
-  },
+  ChangePasswordCodes: {
+    Success: 1050,
+    UserNotFound: 1051,
+    PasswordNotConfirmed: 1052,
+    InvalidOldPassword: 1053,
+    Failure: 1054,
+  }
 };
