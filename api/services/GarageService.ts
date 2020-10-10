@@ -161,4 +161,44 @@ export class GarageService {
 
     return status;
   }
+  async UpdateGarageDetails(
+    onboardingRequest: Request,
+    garageId: string
+  ): Promise<Number> {
+    const { Name, Address, BusinessNumber } = onboardingRequest.body;
+    let status = 0;
+    const GarageId = parseInt(garageId);
+
+    const garage = await Garage.findByPk(GarageId);
+    if (garage === null) {
+      status = StatusCodes.UpdateGarageCodes.GarageNotFound;
+    } else {
+      const newGarage = await Garage.findOne({
+        where: { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
+      });
+      if (newGarage === null) {
+        await Garage.update(
+          { Name: Name, Address: Address, BusinessNumber: BusinessNumber },
+          {
+            where: {
+              Id: GarageId,
+            },
+          }
+        )
+          .then(() => {
+            status = StatusCodes.UpdateGarageCodes.Success;
+          })
+          .catch((err: any) => {
+            console.log(err);
+            status = StatusCodes.UpdateGarageCodes.Failure;
+          });
+      } else if (newGarage.Id != GarageId) {
+        status = StatusCodes.UpdateGarageCodes.GarageAlreadyRegistered;
+      } else {
+        status = StatusCodes.UpdateGarageCodes.Success;
+      }
+    }
+
+    return status;
+  }
 }
