@@ -276,4 +276,17 @@ export class GarageService {
 
     return status;
   }
+  // Get all worker of garage using garage id
+  async GetGarageWorkers(GarageId: Number): Promise<any> {
+    let workers = new Array<Worker>();
+
+    const garage = await Garage.findOne({
+      where: { Id: GarageId, IsDeleted: false, IsActive: true },
+    });
+    if (garage != null && garage.Workers != null) {
+      workers = JSON.parse(garage.Workers);
+    }
+
+    return workers;
+  }
 }
