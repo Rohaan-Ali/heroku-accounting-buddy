@@ -1,9 +1,9 @@
 {
   "database": {
-    "Name": "AccountingBuddy",
-    "Username": "postgres",
-    "Password": "bcsf13m015",
-    "Host": "localhost",
+    "Name": "d821atktq63eq4",
+    "Username": "txnmnpaeonzhmf",
+    "Password": "a89be8c789634fdbf3ecdf8beb3d4bd3993e17e1f0686ac18989b1415b40a316",
+    "Host": "ec2-3-248-4-172.eu-west-1.compute.amazonaws.com",
     "dialect": "postgres"
   },
   "jwt": {
