@@ -9,6 +9,12 @@ const sequelize = new Sequelize(
   {
     host: Configuration.get("database.Host"),
     dialect: Configuration.get("database.dialect"),
+    dialectOptions: {
+      ssl: {
+        require:true,
+        rejectUnauthorized : false,
+      }
+    }
   }
 );
 
